@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Generated data
+outputs/
+outputs_*/
+*.npy
+*.npz
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store

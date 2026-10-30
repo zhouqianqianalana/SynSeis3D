@@ -1,0 +1,20 @@
+[project]
+name = "synseis3d"
+version = "1.0.0"
+description = "Procedural generator of synthetic 3-D seismic volumes with co-registered fault, channel, basement and interval labels"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Qianqian Zhou", email = "qianqianzhou@utexas.edu" }]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.22.0",
+    "scipy>=1.9.0",
+    "pyyaml>=6.0",
+    "matplotlib>=3.6.0",
+]
+
+[project.urls]
+Repository = "https://github.com/zhouqianqianalana/SynSeis3D"
+
+[tool.uv]
+package = false

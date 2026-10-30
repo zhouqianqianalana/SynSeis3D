@@ -1,0 +1,113 @@
+# =============================================================================
+# SynSeis3D base configuration (256^3 grid)
+# =============================================================================
+# This is the configuration used to generate the 230-model corpus described in
+# the accompanying paper. Ranges [lo, hi] are sampled per model by the
+# generator.
+#
+# When run through batch_generate.py, the following are re-drawn for every
+# model (see draw_model_config in batch_generate.py):
+#   - intervals.num_intervals            uniform integer in 3-7
+#   - geobodies.channels.num_channels    uniform integer in 1-6
+#   - deformation.faults.num_faults      uniform integer in 0-4
+#   - random_seed                        model-specific seed
+#   - seismic.noise_level, lateral_footprint_voxels, amplitude_taper_factor
+#     and a common wavelet-width scale (only if batch_randomize_seismic: true)
+# The values written below for those keys are used only when a step is called
+# directly with this file (e.g. a single-model run).
+
+random_seed: 42
+
+# Per-model randomization of the seismic rendering parameters in batch mode.
+batch_randomize_seismic: true
+
+grid:
+  nx: 256
+  ny: 256
+  nz: 256
+  dz_m: 10.0              # vertical sampling (m)
+
+# --- STEP 1: BASEMENT -------------------------------------------------------
+basement:
+  top_depth_fraction: [0.60, 0.90]      # mean basement depth as a fraction of nz
+  relief_amplitude_m: [100.0, 300.0]
+  long_wavelength_sigma_xy: [30.0, 60.0]
+  broad_relief_count: [3, 8]            # number of localized domes/troughs
+  weathered_enabled: true
+  weathered_thickness_m: [10.0, 40.0]
+
+# --- STEP 2: DEPOSITIONAL INTERVALS (SEQUENCE BOUNDARIES) --------------------
+intervals:
+  num_intervals: 6                      # re-drawn by batch_generate.py
+  relief_amplitude_m: [30.0, 150.0]     # surface relief of each boundary
+  long_wavelength_sigma_xy: [40.0, 70.0]
+  # Mean-depth jitter per boundary (fraction of the nominal spacing): lets
+  # adjacent boundaries approach or cross, producing erosional truncation.
+  z_mean_jitter_frac: 0.5
+  # Regional dip of each boundary: total depth change across the grid (voxels).
+  trend_x_samples: [-50.0, 50.0]
+  trend_y_samples: [-50.0, 50.0]
+
+# --- STEP 3: INTERNAL BEDDING -----------------------------------------------
+architecture:
+  avg_bed_thickness_voxels: 4.0
+  # "random" picks a style per interval. Options: "random", "proportional",
+  # "top_parallel" (onlap), "bottom_parallel" (truncation).
+  mode: "random"
+
+# --- STEP 4: CHANNELS -------------------------------------------------------
+geobodies:
+  channels:
+    num_channels: 5                     # re-drawn by batch_generate.py
+    # "random": flow along x or y, drawn per channel. "x": all channels flow
+    # along the inline axis.
+    orientation: "random"
+    width_voxels: [15.0, 40.0]
+    depth_voxels: [8.0, 18.0]           # maximum incision depth
+    sinuosity_freq: [0.5, 3.0]          # centerline frequency f
+    amplitude_voxels: [20.0, 100.0]     # lateral excursion amplitude A
+    internal_bed_thick_voxels: 2.0      # channel-fill bed thickness
+
+# --- STEP 5: FAULTS ---------------------------------------------------------
+deformation:
+  faults:
+    num_faults: 3                       # re-drawn by batch_generate.py
+    blind_fault_probability: 0.5
+    max_displacement_voxels: [10.0, 35.0]
+    dip_degrees: [50.0, 75.0]
+    strike_degrees: [0.0, 360.0]
+    min_spacing_voxels: 10.0            # minimum separation between fault planes
+    # "normal": the hanging wall slips down-dip parallel to the fault plane.
+    kinematics: "normal"
+    # Blind-fault taper spans at least this many displacements in depth.
+    blind_taper_min_length_disp: 2.0
+
+# --- STEP 6: ACOUSTIC PROPERTIES --------------------------------------------
+properties:
+  water_vp: 1500.0
+  water_rho: 1.0
+  sediment_base_vp: 2200.0              # m/s
+  sediment_base_rho: 2.0                # g/cm^3
+  vp_depth_gradient: 0.6                # m/s per m
+  rho_depth_gradient: 0.0002            # g/cm^3 per m
+  # Basement Vp/rho offset above the local depth trend, drawn per model.
+  basement_vp_offset: [300.0, 600.0]
+  basement_rho_offset: [0.10, 0.20]
+  channel_vp: 3200.0
+  channel_rho: 2.2
+
+# --- STEP 7: SEISMIC RESPONSE -----------------------------------------------
+seismic:
+  # Ricker wavelet widths (samples) for the three frequency bands; smaller =
+  # higher frequency. Width 5 is the narrowest that stays band-limited at this
+  # sampling (a width-3 Ricker carries energy past Nyquist).
+  wavelet_widths_voxels: [5.0, 8.0, 20.0]
+  wavelet_length_samples: 61
+  noise_level: 0.18                     # noise RMS relative to signal RMS
+  lateral_footprint_voxels: 1.0         # sigma of the lateral smoothing
+  amplitude_taper_factor: 1.5           # exponential amplitude decay with depth
+
+output:
+  output_dir: "./outputs"
+  model_name: "model_0000"
+  preserve_debug_figures: false
